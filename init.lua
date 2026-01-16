@@ -90,6 +90,11 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- If starting nvim in the config directory, cd to home to avoid opening netrw
+if vim.fn.getcwd() == vim.fn.stdpath('config') then
+  vim.api.nvim_set_current_dir(vim.fn.expand('~'))
+end
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
@@ -155,11 +160,17 @@ vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 -- Preview substitutions live, as you type!
 vim.o.inccommand = 'split'
 
+vim.o.tabstop = 2
+vim.o.softtabstop = 2
+vim.o.shiftwidth = 2
+vim.o.shiftround = true
+vim.o.expandtab = true
+
 -- Show which line your cursor is on
 vim.o.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.o.scrolloff = 10
+vim.o.scrolloff = 5
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
@@ -176,6 +187,38 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+-- Emmet expansion for Vue files
+vim.g.user_emmet_settings = {
+  vue = {
+    extends = 'html',
+    doctype = 'html',
+  },
+}
+
+-- GCC keybinding for commenting in Vue files
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'vue', 'html', 'css', 'scss', 'javascript', 'typescript' },
+  callback = function()
+    vim.keymap.set('n', 'gcc', function()
+      require('Comment.api').toggle.linewise.current()
+    end, { buffer = true, desc = 'Toggle comment line' })
+    vim.keymap.set('x', 'gc', function()
+      require('Comment.api').toggle.linewise.visual()
+    end, { buffer = true, desc = 'Toggle comment selection' })
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'html', 'css', 'scss', 'vue' },
+  callback = function()
+    vim.keymap.set('i', '<C-e>', '<plug>(emmet-expand-abbr)', {
+      buffer = true,
+      silent = true,
+      desc = 'Expand Emmet abbreviation',
+    })
+  end,
+})
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -190,18 +233,14 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 -- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
- -- Keybinds to make split navigation easier.
- --  Use CTRL+<hjkl> to switch between windows
- --
- --  See `:help wincmd` for a list of all window commands
- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
-
- -- Keymaps for splitting windows
- vim.keymap.set('n', '<leader>sv', '<C-w>v', { desc = 'Split window vertically' })
- vim.keymap.set('n', '<leader>sh', '<C-w>s', { desc = 'Split window horizontally' })
+-- Keybinds to make split navigation easier.
+--  Use CTRL+<hjkl> to switch between windows
+--
+--  See `:help wincmd` for a list of all window commands
+vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -250,8 +289,10 @@ rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+   'mattn/emmet-vim', -- Emmet for HTML/CSS expansion
+   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+   'jwalton512/vim-blade', -- Blade template syntax highlighting
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -674,34 +715,159 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-       local servers = {
-         -- clangd = {},
-         -- gopls = {},
-         -- pyright = {},
-         -- rust_analyzer = {},
-         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-         --
-         -- Some languages (like typescript) have entire language plugins that can be useful:
-         --    https://github.com/pmizio/typescript-tools.nvim
-         --
-         -- But for many setups, the LSP (`ts_ls`) will work just fine
-         ts_ls = {},
-        --
-
-        lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
+        local servers = {
+          -- clangd = {},
+          -- gopls = {},
+          -- pyright = {},
+          -- rust_analyzer = {},
+          -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+          --
+           -- Some languages (like typescript) have entire language plugins that can be useful:
+           --    https://github.com/pmizio/typescript-tools.nvim
+           --
+           intelephense = {
+             filetypes = { 'php', 'blade' },
+             settings = {
+               intelephense = {
+                 files = {
+                   maxSize = 5000000,
+                 },
+                 environment = {
+                   phpVersion = '8.2',
+                 },
+                 stubs = {
+                   'bcmath',
+                   'bz2',
+                   'calendar',
+                   'core',
+                   'curl',
+                   'date',
+                   'dba',
+                   'dom',
+                   'enchant',
+                   'fileinfo',
+                   'filter',
+                   'ftp',
+                   'gd',
+                   'gettext',
+                   'gmp',
+                   'hash',
+                   'iconv',
+                   'imap',
+                   'intl',
+                   'json',
+                   'ldap',
+                   'libxml',
+                   'mbstring',
+                   'mcrypt',
+                   'mysqli',
+                   'mysqlnd',
+                   'oci8',
+                   'odbc',
+                   'openssl',
+                   'pcntl',
+                   'pcre',
+                   'pdo',
+                   'pdo_mysql',
+                   'pdo_oci',
+                   'pdo_odbc',
+                   'pdo_pgsql',
+                   'pdo_sqlite',
+                   'pgsql',
+                   'phar',
+                   'posix',
+                   'pspell',
+                   'readline',
+                   'recode',
+                   'reflection',
+                   'session',
+                   'shmop',
+                   'simplexml',
+                   'soap',
+                   'sockets',
+                   'sodium',
+                   'spl',
+                   'sqlite3',
+                   'standard',
+                   'superglobals',
+                   'sysvmsg',
+                   'sysvsem',
+                   'sysvshm',
+                   'tidy',
+                   'tokenizer',
+                   'xml',
+                   'xmlreader',
+                   'xmlwriter',
+                   'xsl',
+                   'zend_test',
+                   'zip',
+                   'zlib',
+                   'laravel',
+                 },
+               },
+             },
+           },
+           -- TypeScript with Vue support
+            ts_ls = {
+              filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+              init_options = {
+                plugins = {
+                  {
+                    name = '@vue/typescript-plugin',
+                    location = vim.fn.stdpath('data')
+                      .. '/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin',
+                    languages = { 'javascript', 'typescript', 'vue' },
+                  },
+                },
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+            },
+
+            -- Vue
+            vue_ls = {
+              filetypes = { 'vue' },
+            },
+
+
+
+           -- Emmet for HTML expansion
+           emmet_language_server = {
+             filetypes = { 'html', 'css', 'scss', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'vue', 'blade' },
+            init_options = {
+            --- @type table<string, string>
+               includeLanguages = { vue = 'html', blade = 'html' },
+              --- @type string[]
+              excludeLanguages = {},
+              --- @type string[]
+              extensionsPath = {},
+              --- @type table<string, any> https://docs.emmet.io/customization/preferences/
+              preferences = {},
+              --- @type boolean
+              showAbbreviationSuggestions = true,
+              --- @type "always" | "never"
+              showExpandedAbbreviation = 'always',
+              --- @type boolean
+              showSuggestionsAsSnippets = true,
+              --- @type table<string, any> https://docs.emmet.io/customization/syntax-profiles/
+              syntaxProfiles = {},
+              --- @type table<string, string> https://docs.emmet.io/customization/snippets/#variables
+              variables = {},
             },
           },
-        },
+
+          lua_ls = {
+            -- cmd = { ... },
+            -- filetypes = { ... },
+            -- capabilities = {},
+            settings = {
+              Lua = {
+                completion = {
+                  callSnippet = 'Replace',
+                },
+                -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+                -- diagnostics = { disable = { 'missing-fields' } },
+              },
+            },
+          },
       }
 
       -- Ensure the servers and tools above are installed
@@ -717,11 +883,17 @@ require('lazy').setup({
       --
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        'stylua', -- Used to format Lua code
-        'prettier', -- Used to format JS/TS code
-      })
+       local ensure_installed = {
+          'stylua', -- Used to format Lua code
+          'vue-language-server', -- Volar
+          'typescript-language-server', -- TS
+          'emmet-language-server', -- Emmet
+          'lua-language-server', -- Lua
+          'prettierd', -- Fast Prettier
+          'intelephense', -- PHP LSP
+          'php-cs-fixer', -- PHP formatter
+          'blade-formatter', -- Blade formatter
+        }
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -729,6 +901,9 @@ require('lazy').setup({
         automatic_installation = false,
         handlers = {
           function(server_name)
+            if server_name == 'emmet_ls' then
+              return
+            end
             local server = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
@@ -771,15 +946,17 @@ require('lazy').setup({
           }
         end
       end,
-      formatters_by_ft = {
-        lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        javascript = { 'prettierd', 'prettier', stop_after_first = true },
-        typescript = { 'prettierd', 'prettier', stop_after_first = true },
-      },
+       formatters_by_ft = {
+          lua = { 'stylua' },
+          vue = { 'prettierd', 'prettier' },
+          php = { 'php_cs_fixer' },
+          blade = { 'blade-formatter' },
+          -- Conform can also run multiple formatters sequentially
+          -- python = { "isort", "black" },
+          --
+          -- You can use 'stop_after_first' to run the first available formatter from the list
+          -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        },
     },
   },
 
@@ -801,17 +978,17 @@ require('lazy').setup({
           end
           return 'make install_jsregexp'
         end)(),
-        dependencies = {
-          -- `friendly-snippets` contains a variety of premade snippets.
-          --    See the README about individual language/framework/plugin snippets:
-          --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
-        },
+         dependencies = {
+           -- `friendly-snippets` contains a variety of premade snippets.
+           --    See the README about individual language/framework/plugin snippets:
+           --    https://github.com/rafamadriz/friendly-snippets
+           {
+             'rafamadriz/friendly-snippets',
+             config = function()
+               require('luasnip.loaders.from_vscode').lazy_load()
+             end,
+           },
+         },
         opts = {},
       },
       'folke/lazydev.nvim',
@@ -819,29 +996,18 @@ require('lazy').setup({
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
     opts = {
-      keymap = {
-        -- 'default' (recommended) for mappings similar to built-in completions
-        --   <c-y> to accept ([y]es) the completion.
-        --    This will auto-import if your LSP supports it.
-        --    This will expand snippets if the LSP sent a snippet.
-        -- 'super-tab' for tab to accept
-        -- 'enter' for enter to accept
-        -- 'none' for no mappings
-        --
-        -- For an understanding of why the 'default' preset is recommended,
-        -- you will need to read `:help ins-completion`
-        --
-        -- No, but seriously. Please read `:help ins-completion`, it is really good!
-        --
-        -- All presets have the following mappings:
-        -- <tab>/<s-tab>: move to right/left of your snippet expansion
-        -- <c-space>: Open menu or open docs if already open
-        -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
-        -- <c-e>: Hide menu
-        -- <c-k>: Toggle signature help
-        --
-        -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+       keymap = {
+         -- Custom keymap: Tab and Ctrl+Y to accept
+         ['<Tab>'] = { 'accept', 'snippet_forward', 'fallback' },
+         ['<C-y>'] = { 'accept' },
+         ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
+         ['<C-Space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+         ['<C-n>'] = { 'select_next', 'fallback' },
+         ['<C-p>'] = { 'select_prev', 'fallback' },
+         ['<Up>'] = { 'select_prev', 'fallback' },
+         ['<Down>'] = { 'select_next', 'fallback' },
+         ['<C-e>'] = { 'hide' },
+         ['<C-k>'] = { 'show_signature', 'hide_signature', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -882,11 +1048,7 @@ require('lazy').setup({
     },
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  { -- TokyoNight theme for markdown
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
@@ -896,11 +1058,6 @@ require('lazy').setup({
           comments = { italic = false }, -- Disable italics in comments
         },
       }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
 
@@ -947,22 +1104,6 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    config = function()
-      require('nvim-treesitter').setup {
-        ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'javascript', 'typescript', 'tsx' },
-        -- Autoinstall languages that are not installed
-        auto_install = true,
-         highlight = {
-           enable = true,
-           -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-           --  If you are experiencing weird indenting issues, add the language to
-           --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-           additional_vim_regex_highlighting = { 'ruby', 'markdown' },
-         },
-        indent = { enable = true, disable = { 'ruby' } },
-      }
-    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
@@ -980,12 +1121,11 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -1019,9 +1159,48 @@ require('lazy').setup({
   },
 })
 
--- theme config
+-- Set colorschemes
 local DEFAULT_SCHEME = 'doom-one'
+local MARKDOWN_SCHEME = 'tokyonight-storm'
+
+-- Start with default colorscheme
 vim.cmd.colorscheme(DEFAULT_SCHEME)
 
+-- Keep track of what we were using before switching to markdown
+local last_non_markdown_scheme = DEFAULT_SCHEME
+
+-- When opening a markdown buffer, switch theme
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'markdown',
+  callback = function()
+    -- remember whatever was active, in case you change schemes manually
+    if vim.g.colors_name ~= MARKDOWN_SCHEME then
+      last_non_markdown_scheme = vim.g.colors_name or DEFAULT_SCHEME
+    end
+    vim.cmd.colorscheme(MARKDOWN_SCHEME)
+  end,
+})
+
+-- When leaving a markdown buffer, restore the previous theme
+vim.api.nvim_create_autocmd('BufLeave', {
+  pattern = '*.md',
+  callback = function()
+    -- Only switch back if we're currently on the markdown theme
+    if vim.g.colors_name == MARKDOWN_SCHEME then
+      vim.cmd.colorscheme(last_non_markdown_scheme or DEFAULT_SCHEME)
+    end
+  end,
+})
+
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 etz
+-- vim: ts=2 sts=2 sw=2 et
+
+-- If netrw opens the config directory, cd to home and open empty buffer
+vim.api.nvim_create_autocmd('BufEnter', {
+  callback = function()
+    if vim.bo.filetype == 'netrw' and vim.fn.expand('%:p:h') == vim.fn.stdpath('config') then
+      vim.api.nvim_set_current_dir(vim.fn.expand('~'))
+      vim.cmd('enew')
+    end
+  end,
+})

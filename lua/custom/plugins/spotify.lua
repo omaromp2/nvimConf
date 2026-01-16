@@ -5,6 +5,14 @@ return {
     -- Optional but nice: fancy notifications
     'rcarriga/nvim-notify',
   },
+  cmd = { 'Spotify' },
+  keys = {
+    { '<leader>ms', '<cmd>Spotify play/pause<CR>', desc = 'Spotify play/pause' },
+    { '<leader>mj', '<cmd>Spotify next<CR>', desc = 'Spotify next' },
+    { '<leader>mk', '<cmd>Spotify prev<CR>', desc = 'Spotify prev' },
+    { '<leader>mo', '<cmd>Spotify show<CR>', desc = 'Spotify show window' },
+    { '<leader>mc', '<cmd>Spotify status<CR>', desc = 'Spotify status' },
+  },
   config = function()
     -- Basic setup (you can tweak this later)
     require('spotify').setup {
@@ -13,15 +21,5 @@ return {
         backend = 'auto', -- "builtin", "notify", "snacks", or "auto"
       },
     }
-
-    -- Keymaps (like in the README)
-    local map = vim.keymap.set
-    local opts = { silent = true, noremap = true }
-
-    map('n', '<leader>ms', ':Spotify play/pause<CR>', vim.tbl_extend('force', opts, { desc = 'Spotify play/pause' }))
-    map('n', '<leader>mj', ':Spotify next<CR>', vim.tbl_extend('force', opts, { desc = 'Spotify next' }))
-    map('n', '<leader>mk', ':Spotify prev<CR>', vim.tbl_extend('force', opts, { desc = 'Spotify prev' }))
-    map('n', '<leader>mo', ':Spotify show<CR>', vim.tbl_extend('force', opts, { desc = 'Spotify show window' }))
-    map('n', '<leader>mc', ':Spotify status<CR>', vim.tbl_extend('force', opts, { desc = 'Spotify status' }))
   end,
 }

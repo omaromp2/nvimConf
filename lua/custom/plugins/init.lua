@@ -2,4 +2,16 @@
 --  I promise not to create any merge conflicts in this directory :)
 --
 -- See the kickstart.nvim README for more information
-return {}
+return {
+  {
+    'numToStr/Comment.nvim',
+    event = 'VeryLazy',
+    opts = {
+      -- Add-comment operator mappings for gcc-style commenting
+      mappings = {
+        basic = true,
+        extra = false,
+      },
+    },
+  },
+}
