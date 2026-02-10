@@ -91,12 +91,16 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- If starting nvim in the config directory, cd to home to avoid opening netrw
-if vim.fn.getcwd() == vim.fn.stdpath('config') then
-  vim.api.nvim_set_current_dir(vim.fn.expand('~'))
+if vim.fn.getcwd() == vim.fn.stdpath 'config' then
+  vim.api.nvim_set_current_dir(vim.fn.expand '~')
 end
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
+vim.g.airline_powerline_fonts = vim.g.have_nerd_font
+vim.g.airline_theme = 'base16'
+vim.g.airline_left_sep = ''
+vim.g.airline_right_sep = ''
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -289,10 +293,12 @@ rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
-   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-   'mattn/emmet-vim', -- Emmet for HTML/CSS expansion
-   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
-   'jwalton512/vim-blade', -- Blade template syntax highlighting
+  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+  'mattn/emmet-vim', -- Emmet for HTML/CSS expansion
+  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+  'jwalton512/vim-blade', -- Blade template syntax highlighting
+  'vim-airline/vim-airline', -- Status/tabline
+  'vim-airline/vim-airline-themes', -- Airline themes
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -715,159 +721,156 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-        local servers = {
-          -- clangd = {},
-          -- gopls = {},
-          -- pyright = {},
-          -- rust_analyzer = {},
-          -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-          --
-           -- Some languages (like typescript) have entire language plugins that can be useful:
-           --    https://github.com/pmizio/typescript-tools.nvim
-           --
-           intelephense = {
-             filetypes = { 'php', 'blade' },
-             settings = {
-               intelephense = {
-                 files = {
-                   maxSize = 5000000,
-                 },
-                 environment = {
-                   phpVersion = '8.2',
-                 },
-                 stubs = {
-                   'bcmath',
-                   'bz2',
-                   'calendar',
-                   'core',
-                   'curl',
-                   'date',
-                   'dba',
-                   'dom',
-                   'enchant',
-                   'fileinfo',
-                   'filter',
-                   'ftp',
-                   'gd',
-                   'gettext',
-                   'gmp',
-                   'hash',
-                   'iconv',
-                   'imap',
-                   'intl',
-                   'json',
-                   'ldap',
-                   'libxml',
-                   'mbstring',
-                   'mcrypt',
-                   'mysqli',
-                   'mysqlnd',
-                   'oci8',
-                   'odbc',
-                   'openssl',
-                   'pcntl',
-                   'pcre',
-                   'pdo',
-                   'pdo_mysql',
-                   'pdo_oci',
-                   'pdo_odbc',
-                   'pdo_pgsql',
-                   'pdo_sqlite',
-                   'pgsql',
-                   'phar',
-                   'posix',
-                   'pspell',
-                   'readline',
-                   'recode',
-                   'reflection',
-                   'session',
-                   'shmop',
-                   'simplexml',
-                   'soap',
-                   'sockets',
-                   'sodium',
-                   'spl',
-                   'sqlite3',
-                   'standard',
-                   'superglobals',
-                   'sysvmsg',
-                   'sysvsem',
-                   'sysvshm',
-                   'tidy',
-                   'tokenizer',
-                   'xml',
-                   'xmlreader',
-                   'xmlwriter',
-                   'xsl',
-                   'zend_test',
-                   'zip',
-                   'zlib',
-                   'laravel',
-                 },
-               },
-             },
-           },
-           -- TypeScript with Vue support
-            ts_ls = {
-              filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
-              init_options = {
-                plugins = {
-                  {
-                    name = '@vue/typescript-plugin',
-                    location = vim.fn.stdpath('data')
-                      .. '/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin',
-                    languages = { 'javascript', 'typescript', 'vue' },
-                  },
-                },
+      local servers = {
+        -- clangd = {},
+        -- gopls = {},
+        -- pyright = {},
+        -- rust_analyzer = {},
+        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+        --
+        -- Some languages (like typescript) have entire language plugins that can be useful:
+        --    https://github.com/pmizio/typescript-tools.nvim
+        --
+        intelephense = {
+          filetypes = { 'php', 'blade' },
+          settings = {
+            intelephense = {
+              files = {
+                maxSize = 5000000,
+              },
+              environment = {
+                phpVersion = '8.2',
+              },
+              stubs = {
+                'bcmath',
+                'bz2',
+                'calendar',
+                'core',
+                'curl',
+                'date',
+                'dba',
+                'dom',
+                'enchant',
+                'fileinfo',
+                'filter',
+                'ftp',
+                'gd',
+                'gettext',
+                'gmp',
+                'hash',
+                'iconv',
+                'imap',
+                'intl',
+                'json',
+                'ldap',
+                'libxml',
+                'mbstring',
+                'mcrypt',
+                'mysqli',
+                'mysqlnd',
+                'oci8',
+                'odbc',
+                'openssl',
+                'pcntl',
+                'pcre',
+                'pdo',
+                'pdo_mysql',
+                'pdo_oci',
+                'pdo_odbc',
+                'pdo_pgsql',
+                'pdo_sqlite',
+                'pgsql',
+                'phar',
+                'posix',
+                'pspell',
+                'readline',
+                'recode',
+                'reflection',
+                'session',
+                'shmop',
+                'simplexml',
+                'soap',
+                'sockets',
+                'sodium',
+                'spl',
+                'sqlite3',
+                'standard',
+                'superglobals',
+                'sysvmsg',
+                'sysvsem',
+                'sysvshm',
+                'tidy',
+                'tokenizer',
+                'xml',
+                'xmlreader',
+                'xmlwriter',
+                'xsl',
+                'zend_test',
+                'zip',
+                'zlib',
+                'laravel',
               },
             },
-
-            -- Vue
-            vue_ls = {
-              filetypes = { 'vue' },
+          },
+        },
+        -- TypeScript with Vue support
+        ts_ls = {
+          filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
+          init_options = {
+            plugins = {
+              {
+                name = '@vue/typescript-plugin',
+                location = vim.fn.stdpath 'data' .. '/mason/packages/vue-language-server/node_modules/@vue/typescript-plugin',
+                languages = { 'javascript', 'typescript', 'vue' },
+              },
             },
+          },
+        },
 
+        -- Vue
+        vue_ls = {
+          filetypes = { 'vue' },
+        },
 
-
-           -- Emmet for HTML expansion
-           emmet_language_server = {
-             filetypes = { 'html', 'css', 'scss', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'vue', 'blade' },
-            init_options = {
+        -- Emmet for HTML expansion
+        emmet_language_server = {
+          filetypes = { 'html', 'css', 'scss', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'vue', 'blade' },
+          init_options = {
             --- @type table<string, string>
-               includeLanguages = { vue = 'html', blade = 'html' },
-              --- @type string[]
-              excludeLanguages = {},
-              --- @type string[]
-              extensionsPath = {},
-              --- @type table<string, any> https://docs.emmet.io/customization/preferences/
-              preferences = {},
-              --- @type boolean
-              showAbbreviationSuggestions = true,
-              --- @type "always" | "never"
-              showExpandedAbbreviation = 'always',
-              --- @type boolean
-              showSuggestionsAsSnippets = true,
-              --- @type table<string, any> https://docs.emmet.io/customization/syntax-profiles/
-              syntaxProfiles = {},
-              --- @type table<string, string> https://docs.emmet.io/customization/snippets/#variables
-              variables = {},
-            },
+            includeLanguages = { vue = 'html', blade = 'html' },
+            --- @type string[]
+            excludeLanguages = {},
+            --- @type string[]
+            extensionsPath = {},
+            --- @type table<string, any> https://docs.emmet.io/customization/preferences/
+            preferences = {},
+            --- @type boolean
+            showAbbreviationSuggestions = true,
+            --- @type "always" | "never"
+            showExpandedAbbreviation = 'always',
+            --- @type boolean
+            showSuggestionsAsSnippets = true,
+            --- @type table<string, any> https://docs.emmet.io/customization/syntax-profiles/
+            syntaxProfiles = {},
+            --- @type table<string, string> https://docs.emmet.io/customization/snippets/#variables
+            variables = {},
           },
+        },
 
-          lua_ls = {
-            -- cmd = { ... },
-            -- filetypes = { ... },
-            -- capabilities = {},
-            settings = {
-              Lua = {
-                completion = {
-                  callSnippet = 'Replace',
-                },
-                -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-                -- diagnostics = { disable = { 'missing-fields' } },
+        lua_ls = {
+          -- cmd = { ... },
+          -- filetypes = { ... },
+          -- capabilities = {},
+          settings = {
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
               },
+              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+              -- diagnostics = { disable = { 'missing-fields' } },
             },
           },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -883,17 +886,17 @@ require('lazy').setup({
       --
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
-       local ensure_installed = {
-          'stylua', -- Used to format Lua code
-          'vue-language-server', -- Volar
-          'typescript-language-server', -- TS
-          'emmet-language-server', -- Emmet
-          'lua-language-server', -- Lua
-          'prettierd', -- Fast Prettier
-          'intelephense', -- PHP LSP
-          'php-cs-fixer', -- PHP formatter
-          'blade-formatter', -- Blade formatter
-        }
+      local ensure_installed = {
+        'stylua', -- Used to format Lua code
+        'vue-language-server', -- Volar
+        'typescript-language-server', -- TS
+        'emmet-language-server', -- Emmet
+        'lua-language-server', -- Lua
+        'prettierd', -- Fast Prettier
+        'intelephense', -- PHP LSP
+        'php-cs-fixer', -- PHP formatter
+        'blade-formatter', -- Blade formatter
+      }
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -946,17 +949,17 @@ require('lazy').setup({
           }
         end
       end,
-       formatters_by_ft = {
-          lua = { 'stylua' },
-          vue = { 'prettierd', 'prettier' },
-          php = { 'php_cs_fixer' },
-          blade = { 'blade-formatter' },
-          -- Conform can also run multiple formatters sequentially
-          -- python = { "isort", "black" },
-          --
-          -- You can use 'stop_after_first' to run the first available formatter from the list
-          -- javascript = { "prettierd", "prettier", stop_after_first = true },
-        },
+      formatters_by_ft = {
+        lua = { 'stylua' },
+        vue = { 'prettierd', 'prettier' },
+        php = { 'php_cs_fixer' },
+        blade = { 'blade-formatter' },
+        -- Conform can also run multiple formatters sequentially
+        -- python = { "isort", "black" },
+        --
+        -- You can use 'stop_after_first' to run the first available formatter from the list
+        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+      },
     },
   },
 
@@ -978,17 +981,17 @@ require('lazy').setup({
           end
           return 'make install_jsregexp'
         end)(),
-         dependencies = {
-           -- `friendly-snippets` contains a variety of premade snippets.
-           --    See the README about individual language/framework/plugin snippets:
-           --    https://github.com/rafamadriz/friendly-snippets
-           {
-             'rafamadriz/friendly-snippets',
-             config = function()
-               require('luasnip.loaders.from_vscode').lazy_load()
-             end,
-           },
-         },
+        dependencies = {
+          -- `friendly-snippets` contains a variety of premade snippets.
+          --    See the README about individual language/framework/plugin snippets:
+          --    https://github.com/rafamadriz/friendly-snippets
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
+        },
         opts = {},
       },
       'folke/lazydev.nvim',
@@ -996,18 +999,18 @@ require('lazy').setup({
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
     opts = {
-       keymap = {
-         -- Custom keymap: Tab and Ctrl+Y to accept
-         ['<Tab>'] = { 'accept', 'snippet_forward', 'fallback' },
-         ['<C-y>'] = { 'accept' },
-         ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
-         ['<C-Space>'] = { 'show', 'show_documentation', 'hide_documentation' },
-         ['<C-n>'] = { 'select_next', 'fallback' },
-         ['<C-p>'] = { 'select_prev', 'fallback' },
-         ['<Up>'] = { 'select_prev', 'fallback' },
-         ['<Down>'] = { 'select_next', 'fallback' },
-         ['<C-e>'] = { 'hide' },
-         ['<C-k>'] = { 'show_signature', 'hide_signature', 'fallback' },
+      keymap = {
+        -- Custom keymap: Tab and Ctrl+Y to accept
+        ['<Tab>'] = { 'accept', 'snippet_forward', 'fallback' },
+        ['<C-y>'] = { 'accept' },
+        ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
+        ['<C-Space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+        ['<C-n>'] = { 'select_next', 'fallback' },
+        ['<C-p>'] = { 'select_prev', 'fallback' },
+        ['<Up>'] = { 'select_prev', 'fallback' },
+        ['<Down>'] = { 'select_next', 'fallback' },
+        ['<C-e>'] = { 'hide' },
+        ['<C-k>'] = { 'show_signature', 'hide_signature', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1161,7 +1164,9 @@ require('lazy').setup({
 
 -- Set colorschemes
 local DEFAULT_SCHEME = 'doom-one'
-local MARKDOWN_SCHEME = 'tokyonight-storm'
+-- local DEFAULT_SCHEME = 'catppuccin-frappe'
+-- local MARKDOWN_SCHEME = 'tokyonight-storm'
+local MARKDOWN_SCHEME = 'catppuccin-frappe'
 
 -- Start with default colorscheme
 vim.cmd.colorscheme(DEFAULT_SCHEME)
@@ -1198,9 +1203,9 @@ vim.api.nvim_create_autocmd('BufLeave', {
 -- If netrw opens the config directory, cd to home and open empty buffer
 vim.api.nvim_create_autocmd('BufEnter', {
   callback = function()
-    if vim.bo.filetype == 'netrw' and vim.fn.expand('%:p:h') == vim.fn.stdpath('config') then
-      vim.api.nvim_set_current_dir(vim.fn.expand('~'))
-      vim.cmd('enew')
+    if vim.bo.filetype == 'netrw' and vim.fn.expand '%:p:h' == vim.fn.stdpath 'config' then
+      vim.api.nvim_set_current_dir(vim.fn.expand '~')
+      vim.cmd 'enew'
     end
   end,
 })
