@@ -4,22 +4,13 @@
 -- See the kickstart.nvim README for more information
 return {
   {
-    'numToStr/Comment.nvim',
+    'folke/ts-comments.nvim',
     event = 'VeryLazy',
-    opts = {
-      -- Add-comment operator mappings for gcc-style commenting
-      mappings = {
-        basic = true,
-        extra = false,
-      },
-    },
+    enabled = vim.fn.has 'nvim-0.10.0' == 1,
+    opts = {},
     keys = {
-      { '<C-S-/>', function()
-        require('Comment.api').toggle.linewise.current()
-      end, mode = 'n', desc = 'Toggle comment line' },
-      { '<C-S-/>', function()
-        require('Comment.api').toggle.linewise(vim.fn.visualmode())
-      end, mode = 'v', desc = 'Toggle comment selection' },
+      { '<C-S-/>', 'gcc', mode = 'n', remap = true, desc = 'Toggle comment line' },
+      { '<C-S-/>', 'gc', mode = 'x', remap = true, desc = 'Toggle comment selection' },
     },
   },
 }

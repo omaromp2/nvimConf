@@ -199,19 +199,6 @@ vim.g.user_emmet_settings = {
   },
 }
 
--- GCC keybinding for commenting in Vue files
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = { 'vue', 'html', 'css', 'scss', 'javascript', 'typescript' },
-  callback = function()
-    vim.keymap.set('n', 'gcc', function()
-      require('Comment.api').toggle.linewise.current()
-    end, { buffer = true, desc = 'Toggle comment line' })
-    vim.keymap.set('x', 'gc', function()
-      require('Comment.api').toggle.linewise.visual()
-    end, { buffer = true, desc = 'Toggle comment selection' })
-  end,
-})
-
 vim.api.nvim_create_autocmd('FileType', {
   pattern = { 'html', 'css', 'scss', 'vue' },
   callback = function()
@@ -1195,6 +1182,103 @@ vim.api.nvim_create_autocmd('BufLeave', {
       vim.cmd.colorscheme(last_non_markdown_scheme or DEFAULT_SCHEME)
     end
   end,
+})
+
+-- Simple startup screen with custom ASCII art
+local startup_art = vim.split(
+  [=[⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⠠⡀⠀⠀⠀⠠⡀⠀⢄⠀⠀���⢀⡀⠀⠀⠀⡄⣦⠀⠀⠆⠰⢀⠀⠀⠐⠀⣠⢂⠒⠀��⠀⠀⠀⣠⠔⠂⠀
+⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠁⠀��⢐⠀⠀⡇⢸⠀⠀⣃⢸⡆⠀⡄⢠⠰⡜⡇⠀⠀⠆⢁⠀⢰⠀⡐⠀⠌⠀⠀⠀⠀⠀⠈⢀⠄⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣤⡀⡀⠀⠀⠀⠐⢄⠙⢆⢳⠈⢦⠀⡿⠀⣧⠘⣧⢰���⠀⣿⠀⠀⡔⠁⣸⠘⠀⠀⠀⠀⢀⣀⢀⠀⠀⠀⠄⠄��⠀
+⠀⠀⠀⠀⠀⣷⣿⢿⠋⢀⡤⠀⠀⠀⠀⢢⠈⠸⡆��⢆⢳⠀⠙⢧⡁⣾⠀⠀⠘⠀⠌⠀⢀⡟⠀⠀⠀⠀⠀⠹⣿⣿⣶⣦⣀⠀⡼⠁⡔
+⠀⠀⠀⣢⣿⣿⣿⠃⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠈⠊⡄⠀⠀⢡⡇⠀⠀⠀⠀⠀⠀���⠀⣶⣦⠀⠀⠀⠀⢹⣿⣿⣿⣷⡈⢀⠜⠀
+⠀⠀⢠⣾���⡿⡏⠰⠁⠀⢀⠄⠀⠀⠀⢠⡾⠀⠀⠀⠀⠀⠈⠀⠀��⠀⠀⢀⠀⠀⠀⢠⡀⢀⢹⣿⣧⠘⡆⡆⢸⣿⣿⣿⣿⢃⠔⠊⠀
+⠀⠀⠈⣿⣿⡇⢳⢀⠄⣠⠇⠀⠀⣰⢀⣿⠁⠀⠀⣠⡞⢀⠆⣰⠀⠀⢀⠀⣸⠀⣶⢀⣿⣧⠈⣎⣿⣿⠄���⣿⢸⢿⣿⣿⣏⠀⠄⠂⠀
+⠀⠀⠀⠸⠿⠗⠈⢾⠀⣟���⠀⠠⣽⢸⡇⠀⢀⢠⣿⠁⢃⣼⢃⡀⠀⡏⢸⣿⠀⠀��⣿⣿⠀⢸⣿⣿⠁⣸⣿⣿⢸⣿⣿⡇⠈⠔⠀⠀
+⡅⠀��⣥⣷⣶⣿⣿⡔⣿⠇⢀⡄⠸⡘⡇⠀⢀⣾⠛⠀⢘⣵⣿⡀⠘⢀⣿⣿⠀⢠⣿⣿⣿⠀⣸⣿⡏⣠⣿⣿⣿⣷⣾⣿���⣶⡄⠀⡇
+⢡⠀⣾⣧⡙⠿⣿⣿⣿⣿⡆⢰⣷⣶⣙⠄���⣼⣿⡇⢠⣺⣿⣿⡇⠀⢸⣿⠟⠀⢸⡿⣛⡟⢠⣿⣿��⣿⣿⣿⣿⡿⠟⣻⣿⣿⣷⢸⠁
+⢸⡄⣿⣿⣷⣄⠀⠈��⢿⣷⠸⣿⣿⣿⣆⢣⣿⣿⣿⠀⢺⣿⣿⣷⠀⡟⢣⣾⠀⣿⣾⣿⣣⣾⡟⣿⣿⣿⠿⠛⠁⢀⣴⣿⣿⣿⣯⣾⡆
+⢰⢻⣿⣿⣿⣿⣷⣦⣀⠀⠈⠑⠙⠿⣿⣿⣧⣿⣿⣿⣿⡎���⣿⣿⡆⢧⣾⣿⣇⣾⡿⠿⠛⠁⠀⠁⠀⠀⠀⠀⢰⣿��⣿⣿⣿⣿⣿⠆
+⢠⣹⣿⣿⣿⣿⣿⣎⠻⡿⢶⣤⡄⣀��⠀⠀⠀⠙⠻⠟⠁⣟⣿⣿⠀⠼⠛⠟⠋⠁⠀⠀⠀⠀⣀⢀⣠⣠⡤⢀⣾⣿⣿⣿⣿⣿⣿⢷⠂
+⠀⢿⣻⣿⣿⣿⣿⣿⣥⣆⢍⢉⣉⣉⣁⠀⠀⠀⠀⢀⡠⠀⠸⢿⣧⢂⠀⠀���⠀⠀⠀⠺⠿⠷⠶⢚⡛⠋⣡⣾⣿⣿⣿⣿⣿⣿⣣⡏��
+⠀⠈⠃⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⣶⣯⣤⣀��⠀⠀⢸⣯⣥⣷⣶⣶⣾⣿⣿⣿⣯⣤⣶⣤⣶⣾⣿⣿⣿⣿⣿⣿⣿⡏⢛⡤⠀
+⠀⠀⣷⢸⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⡶⣄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿���⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢃⣿⣏⠀
+⠀⠀⢹⡎⣿���⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡛⠘⢿⣿��⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡏⣾⣏⡞⠀
+⠀⠀⠸⣷⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡕⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿���⣿⣿⣿⡿⣸⣟⡿⠁⠀
+⠀⠀⠀⢿⣆⡘⣿⣿⣿⣿⣿���⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡥⣼⣿⣿⣿⣿⣿⣿⣿��⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢡⡿⣿⠃⠀⠀
+⠀⠀⠀��⠳⠥⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⢠⣿⣽���⠀⠀⠀
+⠀⠈⠀⠀⠐⠒⠶⢠⣌⣉⠉⠉⠉⠛⠽⣻⣿���⣿⠇⠻⣿⡿⣿⣿⣿⣿⣿⢟⣿⣿⣿⣿⣿⣿⣿⡿⠿��⠛⠋⠀⠀⠈⢉⠀⣀⣀⣷⡆
+⠂⠀⠀⠀⠀⠀⠀⠀⠚��⠳⢒⣦⣀⢀⠈⠙⠩⠴⣞⡁⠌⠻⠿⣿⣿⠟⢡⣾⣿⣿⠿⠛⠋⠁⠀⠀⡀⠀⡀⢀⠀⠠⣠⣞⠀⣂⠗⠁⠃
+⠠⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠟⠿⠆⡄⠀⠀⠈⠙⠳⠤���⠄⠀⠒⠛⠉⠉⠀⠀⣠⣀⣦⣤⣠⣴⣒⡻⢺⠛⠓⠓��⠘⠟⠁⠀⠀
+⢤⠀⠀⠙⠤⡀⠀⡀⠤⢤⡀⠀⠀⠀⠠��⠿⠿⠧⡦⣰⣄⣄⢤⣀⣐⢦⣔⠄⡒⠦⡼⠿⣽⣻⡷⠟⡉⠉⠁⠊⠀⠌⠀⠀⠀⠀⠀⠀⠀
+⢤⠐⠀⠘⠀⣉⠀⠀⠰⠈⠹⠀⠀⠀⠁⠀⠈⠀⠀⠒⠓⠉⠟⠋⠘⠁⠈⠐⠉���⠉⠐⠉⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀]=],
+  '\n',
+  { plain = true }
+)
+
+for i, line in ipairs(startup_art) do
+  startup_art[i] = line:gsub('�', '')
+end
+
+local function startup_center(lines)
+  local centered = {}
+  local width = vim.o.columns
+  for _, line in ipairs(lines) do
+    local pad = math.max(math.floor((width - vim.fn.strdisplaywidth(line)) / 2), 0)
+    table.insert(centered, string.rep(' ', pad) .. line)
+  end
+  return centered
+end
+
+local function show_startup_screen()
+  if vim.fn.argc() > 0 then
+    return
+  end
+  if vim.api.nvim_buf_get_name(0) ~= '' or vim.bo.buftype ~= '' then
+    return
+  end
+  if vim.api.nvim_buf_line_count(0) > 1 or vim.api.nvim_get_current_line() ~= '' then
+    return
+  end
+
+  local top_padding = math.max(math.floor(((vim.o.lines - vim.o.cmdheight - 2) - #startup_art) / 2), 0)
+  local lines = {}
+  for _ = 1, top_padding do
+    table.insert(lines, '')
+  end
+  vim.list_extend(lines, startup_center(startup_art))
+
+  vim.bo.buftype = 'nofile'
+  vim.bo.bufhidden = 'wipe'
+  vim.bo.swapfile = false
+  vim.bo.modifiable = true
+  vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+  vim.bo.modifiable = false
+
+  vim.wo.number = false
+  vim.wo.relativenumber = false
+  vim.wo.cursorline = false
+  vim.wo.signcolumn = 'no'
+  vim.wo.foldcolumn = '0'
+  vim.wo.list = false
+end
+
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = show_startup_screen,
+})
+
+local line_numbers_augroup = vim.api.nvim_create_augroup('line_numbers_default', { clear = true })
+
+local function restore_line_numbers()
+  if vim.bo.buftype ~= '' then
+    return
+  end
+  vim.wo.number = true
+  vim.wo.relativenumber = vim.o.relativenumber
+end
+
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter', 'WinEnter', 'FileType' }, {
+  group = line_numbers_augroup,
+  callback = restore_line_numbers,
 })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
