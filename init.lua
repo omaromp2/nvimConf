@@ -101,6 +101,7 @@ vim.g.airline_powerline_fonts = vim.g.have_nerd_font
 vim.g.airline_theme = 'base16'
 vim.g.airline_left_sep = ''
 vim.g.airline_right_sep = ''
+vim.g['airline#extensions#tabline#enabled'] = 0
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -204,6 +205,7 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = function()
     vim.keymap.set('i', '<C-e>', '<plug>(emmet-expand-abbr)', {
       buffer = true,
+      remap = true,
       silent = true,
       desc = 'Expand Emmet abbreviation',
     })
@@ -822,6 +824,11 @@ require('lazy').setup({
         -- Emmet for HTML expansion
         emmet_language_server = {
           filetypes = { 'html', 'css', 'scss', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'vue', 'blade' },
+          root_dir = function(fname)
+            local util = require 'lspconfig.util'
+            return util.root_pattern('package.json', 'vite.config.ts', 'vite.config.js', 'vite.config.mts', 'vite.config.cts', '.git')(fname)
+              or util.path.dirname(fname)
+          end,
           init_options = {
             --- @type table<string, string>
             includeLanguages = { vue = 'html', blade = 'html' },
@@ -996,7 +1003,6 @@ require('lazy').setup({
         ['<C-p>'] = { 'select_prev', 'fallback' },
         ['<Up>'] = { 'select_prev', 'fallback' },
         ['<Down>'] = { 'select_next', 'fallback' },
-        ['<C-e>'] = { 'hide' },
         ['<C-k>'] = { 'show_signature', 'hide_signature', 'fallback' },
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
@@ -1094,6 +1100,28 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
+    opts = {
+      ensure_installed = {
+        'bash',
+        'css',
+        'html',
+        'javascript',
+        'json',
+        'lua',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'scss',
+        'tsx',
+        'typescript',
+        'vim',
+        'vimdoc',
+        'vue',
+      },
+      auto_install = true,
+      highlight = { enable = true },
+      indent = { enable = true },
+    },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --

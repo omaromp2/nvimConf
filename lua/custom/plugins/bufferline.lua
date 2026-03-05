@@ -5,19 +5,46 @@ return {
   config = function()
     require('bufferline').setup {
       options = {
-        mode = 'buffers', -- show buffers as tabs
-        diagnostics = 'nvim_lsp', -- show LSP diagnostics in tabs
+        mode = 'buffers',
+        diagnostics = 'nvim_lsp',
+        diagnostics_update_in_insert = false,
+        diagnostics_indicator = function(count, level)
+          local icon = level:match 'error' and ' ' or ' '
+          return ' ' .. icon .. count
+        end,
+        always_show_bufferline = true,
+        separator_style = 'thin',
+        indicator = {
+          style = 'underline',
+        },
+        numbers = 'none',
         show_close_icon = false,
         show_buffer_close_icons = false,
-        separator_style = 'slant', -- "slant" | "thin" | "padded_slant" | "none"
+        modified_icon = '●',
+        max_name_length = 24,
+        max_prefix_length = 16,
+        tab_size = 20,
+        truncate_names = true,
+        custom_filter = function(bufnr)
+          if vim.bo[bufnr].buftype ~= '' then
+            return false
+          end
+          return vim.fn.bufname(bufnr) ~= ''
+        end,
         offsets = {
           {
-            filetype = 'neo-tree', -- or "NvimTree" if you use that
+            filetype = 'neo-tree',
             text = 'Explorer',
             highlight = 'Directory',
             text_align = 'left',
           },
         },
+      },
+      highlights = {
+        fill = { bg = 'NONE' },
+        background = { italic = false },
+        buffer_selected = { bold = true, italic = false },
+        diagnostic_selected = { bold = true },
       },
     }
 
