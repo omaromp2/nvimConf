@@ -286,8 +286,8 @@ require('lazy').setup({
   'mattn/emmet-vim', -- Emmet for HTML/CSS expansion
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
   'jwalton512/vim-blade', -- Blade template syntax highlighting
-  'vim-airline/vim-airline', -- Status/tabline
-  'vim-airline/vim-airline-themes', -- Airline themes
+  -- 'vim-airline/vim-airline', -- Status/tabline
+  -- 'vim-airline/vim-airline-themes', -- Airline themes
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -882,6 +882,7 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = {
         'stylua', -- Used to format Lua code
+        'biome', -- JS/TS formatter + linter
         'vue-language-server', -- Volar
         'typescript-language-server', -- TS
         'emmet-language-server', -- Emmet
@@ -896,20 +897,16 @@ require('lazy').setup({
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            if server_name == 'emmet_ls' then
-              return
-            end
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        automatic_enable = false,
       }
+
+      for server_name, server in pairs(servers) do
+        -- Register custom configs before enabling so Mason doesn't start the server
+        -- with default filetypes/options.
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        vim.lsp.config(server_name, server)
+        vim.lsp.enable(server_name)
+      end
     end,
   },
 
@@ -945,6 +942,10 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        javascript = { 'biome' },
+        javascriptreact = { 'biome' },
+        typescript = { 'biome' },
+        typescriptreact = { 'biome' },
         vue = { 'prettierd', 'prettier' },
         php = { 'php_cs_fixer' },
         blade = { 'blade-formatter' },
@@ -1181,36 +1182,36 @@ require('lazy').setup({
 local DEFAULT_SCHEME = 'doom-one'
 -- local DEFAULT_SCHEME = 'catppuccin-frappe'
 -- local MARKDOWN_SCHEME = 'tokyonight-storm'
-local MARKDOWN_SCHEME = 'catppuccin-frappe'
+-- local MARKDOWN_SCHEME = 'catppuccin-frappe'
 
 -- Start with default colorscheme
 vim.cmd.colorscheme(DEFAULT_SCHEME)
 
 -- Keep track of what we were using before switching to markdown
-local last_non_markdown_scheme = DEFAULT_SCHEME
+--local last_non_markdown_scheme = DEFAULT_SCHEME
 
--- When opening a markdown buffer, switch theme
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'markdown',
-  callback = function()
-    -- remember whatever was active, in case you change schemes manually
-    if vim.g.colors_name ~= MARKDOWN_SCHEME then
-      last_non_markdown_scheme = vim.g.colors_name or DEFAULT_SCHEME
-    end
-    vim.cmd.colorscheme(MARKDOWN_SCHEME)
-  end,
-})
-
--- When leaving a markdown buffer, restore the previous theme
-vim.api.nvim_create_autocmd('BufLeave', {
-  pattern = '*.md',
-  callback = function()
-    -- Only switch back if we're currently on the markdown theme
-    if vim.g.colors_name == MARKDOWN_SCHEME then
-      vim.cmd.colorscheme(last_non_markdown_scheme or DEFAULT_SCHEME)
-    end
-  end,
-})
+-- -- When opening a markdown buffer, switch theme
+-- vim.api.nvim_create_autocmd('FileType', {
+--   pattern = 'markdown',
+--   callback = function()
+--     -- remember whatever was active, in case you change schemes manually
+--     if vim.g.colors_name ~= MARKDOWN_SCHEME then
+--       last_non_markdown_scheme = vim.g.colors_name or DEFAULT_SCHEME
+--     end
+--     vim.cmd.colorscheme(MARKDOWN_SCHEME)
+--   end,
+-- })
+--
+-- -- When leaving a markdown buffer, restore the previous theme
+-- vim.api.nvim_create_autocmd('BufLeave', {
+--   pattern = '*.md',
+--   callback = function()
+--     -- Only switch back if we're currently on the markdown theme
+--     if vim.g.colors_name == MARKDOWN_SCHEME then
+--       vim.cmd.colorscheme(last_non_markdown_scheme or DEFAULT_SCHEME)
+--     end
+--   end,
+-- })
 
 -- Simple startup screen with custom ASCII art
 local startup_art = vim.split(
